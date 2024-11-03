@@ -1,39 +1,34 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
+﻿using System.Text;
 
 public class Assignment
     {
     public static void Main()
         {
-
         while (true)
             {
-            // Prompt the user for input
             Console.Write("Please input: ");
             string input = Console.ReadLine() ?? "Default Value";
 
             if (!input.EndsWith("#"))
                 {
-                Console.Write("# should always be included at the end of every input.\n");
+                Console.WriteLine("# should always be included at the end of every input.");
                 }
             else
                 {
-                // Call the OldPhonePad method with the input
                 string result = OldPhonePad(input);
                 Console.WriteLine("You entered: " + result);
                 Console.Write("Do you want to input again? (yes/no): ");
                 string continueInput = Console.ReadLine() ?? "Default Value";
                 if (continueInput?.ToLower() != "yes")
                     {
-                    break; // Exit the loop if the user does not want to continue
+                    break;
                     }
                 }
             }
         }
+
     public static string OldPhonePad(string input)
         {
-        // Define the mapping of keys to letters
         var keyMap = new Dictionary<char, string>
         {
             {'2', "ABC"},
@@ -46,62 +41,64 @@ public class Assignment
             {'9', "WXYZ"}
         };
 
-        var result = new StringBuilder();  // To build the final output
-        var currentChars = new StringBuilder();  // To track current character sequence
-        char lastChar = '\0';  // Track the last character for sequence detection
+        var result = new StringBuilder();
+        char lastChar = '\0';
+        int count = 0;
 
         foreach (char c in input)
             {
             if (c == '#')
                 {
-                // End of input - break out of the loop
+                if (count > 0 && keyMap.ContainsKey(lastChar))
+                    {
+                    result.Append(keyMap[lastChar][(count - 1) % keyMap[lastChar].Length]);
+                    Console.WriteLine($"Processingfinal: {lastChar}, Count: {count}, Result: {result}");
+                    }
                 break;
                 }
             else if (c == '*')
                 {
-                // Backspace - remove the last character from the result if present
+                // Backspace - only remove the last character if present
                 if (result.Length > 0)
                     {
-                    result.Length--;  // This removes the last character safely
+                    count = 0;
+                    Console.WriteLine($"Processingstar: *, Count: {count}, Result: {result}");
                     }
                 }
             else if (c == ' ')
                 {
                 // Space indicates the end of a current sequence
-                if (currentChars.Length > 0 && keyMap.ContainsKey(lastChar))
+                if (count > 0 && keyMap.ContainsKey(lastChar))
                     {
-                    int index = (currentChars.Length - 1) % keyMap[lastChar].Length;
-                    result.Append(keyMap[lastChar][index]);
-                    currentChars.Clear();  // Clear sequence for the next set
+                    result.Append(keyMap[lastChar][(count - 1) % keyMap[lastChar].Length]);
                     }
+                count = 0;
+                lastChar = '\0';
                 }
             else
                 {
-                // Handle digit input
-                if (c != lastChar && currentChars.Length > 0)
+                if (c == lastChar)
                     {
-                    // Add the corresponding letter for the last character sequence
-                    if (keyMap.ContainsKey(lastChar))
+                    count++;
+                    }
+                else
+                    {
+                    // Append the last sequence's final character if available
+                    if (count > 0 && keyMap.ContainsKey(lastChar))
                         {
-                        int index = (currentChars.Length - 1) % keyMap[lastChar].Length;
-                        result.Append(keyMap[lastChar][index]);
+                        result.Append(keyMap[lastChar][(count - 1) % keyMap[lastChar].Length]);
                         }
-                    currentChars.Clear();
+                    lastChar = c;
+                    count = 1;
                     }
 
-                // Update the current sequence
-                currentChars.Append(c);
-                lastChar = c;
+                if (count > 0 && keyMap.ContainsKey(lastChar))
+                    {
+                    int index = (count - 1) % keyMap[lastChar].Length;
+                    Console.WriteLine($"Processing: {c}, Count: {count}, Result: {result}{keyMap[lastChar][index]}");
+                    }
                 }
             }
-
-        // Handle any remaining characters at the end of the input
-        if (currentChars.Length > 0 && keyMap.ContainsKey(lastChar))
-            {
-            int index = (currentChars.Length - 1) % keyMap[lastChar].Length;
-            result.Append(keyMap[lastChar][index]);
-            }
-
         return result.ToString();
         }
     }
